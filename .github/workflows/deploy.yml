@@ -3,6 +3,7 @@ name: Deploy Kino Bot
 on:
   push:
     branches: [ main ]
+  workflow_dispatch: # Bu tugma orqali qo'lda ishga tushirish imkonini beradi
 
 jobs:
   deploy:
@@ -12,28 +13,16 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Deploy to Server
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v1.0.3
         with:
-          # BU YERDA ISMLAR GITHUB SETTINGSDAGI BILAN BIR XIL BO'LISHI SHART
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
           port: ${{ secrets.PORT }}
           script: |
-            # 1. Loyiha papkasiga kirish
             cd /home/sardor/kino-bot
-            
-            # 2. Yangi kodni olish
             git pull origin main
-            
-            # 3. Virtual muhitni yoqish (venv borligiga ishonch hosil qiling)
-            # Agar venv bo'lmasa: python3 -m venv venv
-            source venv/bin/activate
-            
-            # 4. Kutubxonalarni yangilash
-            pip install -r requirements.txt
-            
-            # 5. Botni qayta ishga tushirish
-            # Eslatma: Botni systemd service qilib sozlagan bo'lishingiz kerak
-            # Masalan: sudo systemctl restart kino-bot
-            # Agar oddiy ishga tushirsangiz: pkill -f main.py || true && nohup python3 main.py &
+            source venv/bin/activate || true
+            pip install -r requirements.txt || true
+            pkill -f main.py || true
+            nohup python3 main.py > bot.log 2>&1 &
