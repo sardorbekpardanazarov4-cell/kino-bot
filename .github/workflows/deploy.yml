@@ -1,8 +1,8 @@
-name: Deploy Python App
+name: Deploy Kino Bot
 
 on:
   push:
-    branches: [ main ] # Agar sizda branch nomi 'master' bo'lsa, master deb yozing
+    branches: [ main ]
 
 jobs:
   deploy:
@@ -14,15 +14,26 @@ jobs:
       - name: Deploy to Server
         uses: appleboy/ssh-action@master
         with:
+          # BU YERDA ISMLAR GITHUB SETTINGSDAGI BILAN BIR XIL BO'LISHI SHART
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
           port: ${{ secrets.PORT }}
           script: |
-            cd /home/sardor/LOYIHA_PAPKANGIZ_NOMI
+            # 1. Loyiha papkasiga kirish
+            cd /home/sardor/kino-bot
+            
+            # 2. Yangi kodni olish
             git pull origin main
+            
+            # 3. Virtual muhitni yoqish (venv borligiga ishonch hosil qiling)
+            # Agar venv bo'lmasa: python3 -m venv venv
             source venv/bin/activate
+            
+            # 4. Kutubxonalarni yangilash
             pip install -r requirements.txt
-            # Agar Django bo'lsa, quyidagilarni ham qo'shing:
-            # python manage.py migrate
-            # sudo systemctl restart gunicorn
+            
+            # 5. Botni qayta ishga tushirish
+            # Eslatma: Botni systemd service qilib sozlagan bo'lishingiz kerak
+            # Masalan: sudo systemctl restart kino-bot
+            # Agar oddiy ishga tushirsangiz: pkill -f main.py || true && nohup python3 main.py &
