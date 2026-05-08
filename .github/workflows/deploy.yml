@@ -1,0 +1,28 @@
+name: Deploy Python App
+
+on:
+  push:
+    branches: [ main ] # Agar sizda branch nomi 'master' bo'lsa, master deb yozing
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Deploy to Server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /home/sardor/LOYIHA_PAPKANGIZ_NOMI
+            git pull origin main
+            source venv/bin/activate
+            pip install -r requirements.txt
+            # Agar Django bo'lsa, quyidagilarni ham qo'shing:
+            # python manage.py migrate
+            # sudo systemctl restart gunicorn
